@@ -58,7 +58,7 @@ def float2bit(number, precision):
 
 def size_of_message(min_val, max_val):
     #print(f"Rounded low : {round(min_val, 2)} | Rounded high : {round(max_val, 2)}")
-    width = round(max_val, 4) - round(min_val, 4)
+    width = max_val - min_val
     
     if width <= 0:
         return float('inf')  # high value
