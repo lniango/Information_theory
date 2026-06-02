@@ -51,13 +51,19 @@ def float2bit(number, precision):
             bit  = 0
             high = mid
         bits.append(bit)
-        print(f"[{low}, {high}]")
+        #print(f"[{low}, {high}]")
     binary_str = "0." + "".join(str(b) for b in bits)
     
     return binary_str
 
 def size_of_message(min_val, max_val):
-    return -math.log2(max_val - min_val)
+    #print(f"Rounded low : {round(min_val, 2)} | Rounded high : {round(max_val, 2)}")
+    width = round(max_val, 4) - round(min_val, 4)
+    
+    if width <= 0:
+        return float('inf')  # high value
+    
+    return -math.log2(width)
 
 def compute_entropy(dictionary):
     """
@@ -78,9 +84,10 @@ def build_proba(message):
         
 
 # Custom arithmetic coding
-def arithmetic_coding(message):
+def arithmetic_coding(message, precision):
     """
     message : string to encode
+    precision: number of bits of the final code
     return  : code value, bitstream, interval, entropy
     """
 
@@ -95,12 +102,11 @@ def arithmetic_coding(message):
     # initial full interval
     low, high = 0.0, 1.0
 
-    # build intervals once (global model)
+    # build intervals once (global model) from 0 to 1
     intervals = create_intervals(dico_sorted, low, high)
 
     # arithmetic encoding loop 
     for symbol in message:
-
         range_width = high - low
 
         sym_low, sym_high = intervals[symbol]
@@ -111,16 +117,17 @@ def arithmetic_coding(message):
         low, high = new_low, new_high
 
         # recompute intervals inside new range
-        intervals = create_intervals(dico_sorted, low, high)
+        #intervals = create_intervals(dico_sorted, low, high)
 
     # final code = any point in final interval (deterministic, NOT random)
     code_val = (low + high) / 2
 
-    # convert to bitstream (your existing function)
-    code_bin = float2bit(code_val, 16)
+    # convert to bitstream 
+    code_bin = float2bit(code_val, precision)
 
     # entropy of source model
     H = compute_entropy(proba)
+    #print(f"Low: {low} | HIGH: {high}")
 
     return code_val, code_bin, low, high, H
     
@@ -131,8 +138,8 @@ def arithmetic_coding(message):
 #table = ['N', 'I', 'A', 'N', 'G', 'O', 'L', 'O', 'U', 'I', 'S']
 #proba = [1/11, 2/11, 1/11, 2/11, 2/11, 1/11, 1/11, 1/11]
 message = "Niango Louis"
-code_val, code_bin, min_w, max_w, H = arithmetic_coding(message)
-
+code_val, code_bin, min_w, max_w, H = arithmetic_coding(message, 4)
+print(f"final interval : [{min_w}, {max_w}]")
 print(f"Value to be coded : {code_val} | Bitstream : {code_bin}")
-#print(f"Size of de coded message: {size_of_message(min_w, max_w)} bits")
+print(f"Size of de coded message: {size_of_message(min_w, max_w)} bits")
 print(f"Entropy: {H} bits")
