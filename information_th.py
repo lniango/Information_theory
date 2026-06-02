@@ -25,7 +25,7 @@ def create_intervals(dico_sorted, min, max):
         
         intervals[symbol] = (low, high)
         cumulative        = high
-    print(f"Interval : {intervals}")
+    #print(f"Interval : {intervals}")
     
     return intervals
 
@@ -37,16 +37,18 @@ def float2bit(number, precision):
     low  = 0
     high = 1
     bits = []
+    #mid  = 0
     
     for i in range(precision):
-        mid = (high - low) / 2
-        if number >= (mid + low):
+        mid = (high - low) / 2 + low
+        if number >= mid:
             bit = 1
             low = mid
         else:
             bit  = 0
             high = mid
         bits.append(bit)
+        print(f"[{low}, {high}]")
     binary_str = "0." + "".join(str(b) for b in bits)
     
     return binary_str
@@ -63,8 +65,8 @@ def arithmetic_coding(table, proba):
     
     #Create a dictionary
     if len(table) != len(proba):
-        #raise KeyError("Please verify table dimensions")
-        print("Please verify table dimensions")
+        raise KeyError("Please verify table dimensions")
+        #print("Please verify table dimensions")
     
     dico = {}
     for j in range(len(table)):
@@ -81,25 +83,25 @@ def arithmetic_coding(table, proba):
     
     for i in range(len(table)):
         range_min, range_max = intervals[table[i]]
-        print(f"Returned interval of {table[i]} ---> [ {range_min}; {range_max} ]")
+        #print(f"Returned interval of {table[i]} ---> [ {range_min}; {range_max} ]")
         #range_min, range_max = range_min * min_w
         min_w, max_w = range_min, range_max
         intervals = create_intervals(dico_sorted, min_w, max_w)
     
     # final range for coding Sequence: [min_w, max_w]
-    print(f"Last interval : [{min_w}, {max_w}]")
+    #print(f"Last interval : [{min_w}, {max_w}]")
     code_val = round(random.uniform(min_w, max_w), 4)
     
     # Conversion: float to bits
-    code_bin = float2bit(code_val, 8) 
+    code_bin = float2bit(code_val, 16) 
     
     return code_val, code_bin
     
     
 #def aritmetic_decoding():
     
-#test
-table = ['B', 'A', 'C']
-proba = [0.25, 0.25, 0.5]
+#test : Louis Niango
+table = ['A', 'I', 'G', 'N', 'O', 'S', 'U', 'L']
+proba = [1/11, 2/11, 1/11, 2/11, 2/11, 1/11, 1/11, 1/11]
 code_val, code_bin = arithmetic_coding(table, proba)
 print(f"Value to be coded : {code_val} | Bitstream : {code_bin}")
