@@ -4,6 +4,7 @@
 # https://web.stanford.edu/class/ee398a/projects.htm
 # https://ocw.mit.edu/courses/6-441-information-theory-spring-2016/pages/lecture-notes/
 # Github repo: https://github.com/leandromoreira/digital_video_introduction#vlc-coding
+# https://go-compression.github.io/algorithms/arithmetic/
 """
 
 import numpy as np 
@@ -12,6 +13,9 @@ import cv2 as cv
 import random
 
 def create_intervals(dico_sorted, min, max):
+    """
+    create cumulative intervals depending on min and max
+    """
     # create ranges 
     cumulative = min
     intervals  = {}
@@ -24,6 +28,16 @@ def create_intervals(dico_sorted, min, max):
     print(f"Interval : {intervals}")
     
     return intervals
+
+def float2bit(number, precision):
+    """
+    Convert a float number between 0 and 1 into bits
+    with respect to a precision
+    """
+    interval_min = 0
+    interval_max = 1
+    
+    for i in range(precision):
 
 # Custom arithmetic coding
 def arithmetic_coding(table, proba):
@@ -61,7 +75,7 @@ def arithmetic_coding(table, proba):
     
     # final range for coding Sequence: [min_w, max_w]
     print(f"Last interval : [{min_w}, {max_w}]")
-    code_val = random.uniform(min_w, max_w)
+    code_val = round(random.uniform(min_w, max_w), 4)
     
     return code_val
     
