@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import cv2 as cv
 import random
+import math
 
 def create_intervals(dico_sorted, min, max):
     """
@@ -52,6 +53,17 @@ def float2bit(number, precision):
     binary_str = "0." + "".join(str(b) for b in bits)
     
     return binary_str
+
+def size_of_message(min_val, max_val):
+    return -math.log2(max_val - min_val)
+
+def compute_entropy():
+    """
+    Mean of the Minimum value of the length of the code used to encode each symbol 
+    
+    Input: dictionary
+    """
+    
         
 
 # Custom arithmetic coding
@@ -59,7 +71,7 @@ def arithmetic_coding(table, proba):
     """
     table  : table of symbols
     proba. : likelihood of symbols 
-    return : bitstream
+    return : float value to be coded, bitstream, interval
     """
     save_table = table
     
@@ -95,7 +107,7 @@ def arithmetic_coding(table, proba):
     # Conversion: float to bits
     code_bin = float2bit(code_val, 16) 
     
-    return code_val, code_bin
+    return code_val, code_bin, min_w, max_w
     
     
 #def aritmetic_decoding():
@@ -103,5 +115,6 @@ def arithmetic_coding(table, proba):
 #test : Louis Niango
 table = ['A', 'I', 'G', 'N', 'O', 'S', 'U', 'L']
 proba = [1/11, 2/11, 1/11, 2/11, 2/11, 1/11, 1/11, 1/11]
-code_val, code_bin = arithmetic_coding(table, proba)
+code_val, code_bin, min_w, max_w = arithmetic_coding(table, proba)
+print(f"Size of de coded message: {size_of_message(min_w, max_w)} bits")
 print(f"Value to be coded : {code_val} | Bitstream : {code_bin}")
