@@ -34,10 +34,23 @@ def float2bit(number, precision):
     Convert a float number between 0 and 1 into bits
     with respect to a precision
     """
-    interval_min = 0
-    interval_max = 1
+    low  = 0
+    high = 1
+    bits = []
     
     for i in range(precision):
+        mid = (high - low) / 2
+        if number >= (mid + low):
+            bit = 1
+            low = mid
+        else:
+            bit  = 0
+            high = mid
+        bits.append(bit)
+    binary_str = "0." + "".join(str(b) for b in bits)
+    
+    return binary_str
+        
 
 # Custom arithmetic coding
 def arithmetic_coding(table, proba):
@@ -77,7 +90,10 @@ def arithmetic_coding(table, proba):
     print(f"Last interval : [{min_w}, {max_w}]")
     code_val = round(random.uniform(min_w, max_w), 4)
     
-    return code_val
+    # Conversion: float to bits
+    code_bin = float2bit(code_val, 8) 
+    
+    return code_val, code_bin
     
     
 #def aritmetic_decoding():
@@ -85,5 +101,5 @@ def arithmetic_coding(table, proba):
 #test
 table = ['B', 'A', 'C']
 proba = [0.25, 0.25, 0.5]
-code_val = arithmetic_coding(table, proba)
-print(f"Value to be coded: {code_val}")
+code_val, code_bin = arithmetic_coding(table, proba)
+print(f"Value to be coded : {code_val} | Bitstream : {code_bin}")
