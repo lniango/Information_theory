@@ -7,6 +7,8 @@
 # https://go-compression.github.io/algorithms/arithmetic/
 """
 
+from collections import Counter
+
 import numpy as np 
 import matplotlib.pyplot as plt 
 import cv2 as cv
@@ -57,64 +59,80 @@ def float2bit(number, precision):
 def size_of_message(min_val, max_val):
     return -math.log2(max_val - min_val)
 
-def compute_entropy():
+def compute_entropy(dictionary):
     """
     Mean of the Minimum value of the length of the code used to encode each symbol 
     
     Input: dictionary
+    return: Entropy
     """
-    
+    H = 0.0
+    for symbol, p in dictionary.items():
+        H += -p * math.log2(p)
+    return H
+
+def build_proba(message):
+    counts = Counter(message)
+    total = len(message)
+    return {s: c / total for s, c in counts.items()}
         
 
 # Custom arithmetic coding
-def arithmetic_coding(table, proba):
+def arithmetic_coding(message):
     """
-    table  : table of symbols
-    proba. : likelihood of symbols 
-    return : float value to be coded, bitstream, interval
+    message : string to encode
+    return  : code value, bitstream, interval, entropy
     """
-    save_table = table
-    
-    #Create a dictionary
-    if len(table) != len(proba):
-        raise KeyError("Please verify table dimensions")
-        #print("Please verify table dimensions")
-    
-    dico = {}
-    for j in range(len(table)):
-        dico[table[j]] = proba[j]
-    # Sort dictionary
-    dico_sorted = sorted(dico.items(), key = lambda x : x[1], reverse=True)
-    
-    range_min = 0
-    range_max = 1
-    min_w, max_w = 1, 1
-    
-    # create initial intervals
-    intervals = create_intervals(dico_sorted, range_min, range_max)
-    
-    for i in range(len(table)):
-        range_min, range_max = intervals[table[i]]
-        #print(f"Returned interval of {table[i]} ---> [ {range_min}; {range_max} ]")
-        #range_min, range_max = range_min * min_w
-        min_w, max_w = range_min, range_max
-        intervals = create_intervals(dico_sorted, min_w, max_w)
-    
-    # final range for coding Sequence: [min_w, max_w]
-    #print(f"Last interval : [{min_w}, {max_w}]")
-    code_val = round(random.uniform(min_w, max_w), 4)
-    
-    # Conversion: float to bits
-    code_bin = float2bit(code_val, 16) 
-    
-    return code_val, code_bin, min_w, max_w
+
+    message = list(message)
+
+    # pbuild robability 
+    proba = build_proba(message)
+
+    # sort symbols by probability (important for deterministic intervals)
+    dico_sorted = sorted(proba.items(), key=lambda x: x[1], reverse=True)
+
+    # initial full interval
+    low, high = 0.0, 1.0
+
+    # build intervals once (global model)
+    intervals = create_intervals(dico_sorted, low, high)
+
+    # arithmetic encoding loop 
+    for symbol in message:
+
+        range_width = high - low
+
+        sym_low, sym_high = intervals[symbol]
+
+        new_low  = low + range_width * sym_low
+        new_high = low + range_width * sym_high
+
+        low, high = new_low, new_high
+
+        # recompute intervals inside new range
+        intervals = create_intervals(dico_sorted, low, high)
+
+    # final code = any point in final interval (deterministic, NOT random)
+    code_val = (low + high) / 2
+
+    # convert to bitstream (your existing function)
+    code_bin = float2bit(code_val, 16)
+
+    # entropy of source model
+    H = compute_entropy(proba)
+
+    return code_val, code_bin, low, high, H
     
     
 #def aritmetic_decoding():
     
 #test : Louis Niango
-table = ['A', 'I', 'G', 'N', 'O', 'S', 'U', 'L']
-proba = [1/11, 2/11, 1/11, 2/11, 2/11, 1/11, 1/11, 1/11]
-code_val, code_bin, min_w, max_w = arithmetic_coding(table, proba)
-print(f"Size of de coded message: {size_of_message(min_w, max_w)} bits")
+#table = ['N', 'I', 'A', 'N', 'G', 'O', 'L', 'O', 'U', 'I', 'S']
+#proba = [1/11, 2/11, 1/11, 2/11, 2/11, 1/11, 1/11, 1/11]
+message = "Niango Louis"
+code_val, code_bin, min_w, max_w, H = arithmetic_coding(message)
+
 print(f"Value to be coded : {code_val} | Bitstream : {code_bin}")
+#print(f"Size of de coded message: {size_of_message(min_w, max_w)} bits")
+print(f"Entropy: {H} bits")
