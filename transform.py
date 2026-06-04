@@ -46,6 +46,19 @@ def dct_on_blocs(gray_img, bloc_size=8):
         
     return dct_per_bloc
 
+def display_dct(dct_blocks):
+    # nb_bloc x bloc_size x bloc_size
+    nb_bloc, bloc_size, bloc_size = dct_blocks.shape
+    #h, w = input_img.shape
+    plt.figure(figsize=(12, 12))
+    for i in range(25):
+        plt.subplot(5, 5, i+1)
+        plt.title(f"DCT block {i+1}")
+        plt.imshow(dct_blocks[i, :, :], cmap='gray')
+    plt.show()
+    #return dct_blocks[1]
+    
+
 
 
 #test dct 
@@ -70,5 +83,5 @@ print(f"Shape - Image DCT bloc BEFORE: {dct_per_bloc_np.shape}") # 1444x8x8
 dct_per_bloc_np = dct_per_bloc_np[:gray_img_padded.shape[0] - pad_h, :gray_img_padded.shape[1] - pad_w]
 #dct_per_bloc_np = dct_per_bloc_np.reshape((h, w))
 print(f"Shape - Image DCT bloc AFTER: {dct_per_bloc_np.shape}") # 1444x8x8
-plt.imshow(dct_per_bloc_np, cmap='gray')
-plt.show()
+
+display_dct(dct_per_bloc_np)
